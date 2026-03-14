@@ -1,6 +1,6 @@
 # xbrowserai - Browser AI Assistant
 
-[![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node.js-%3E%3D16-green.svg)](https://nodejs.org/)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](package.json)
 
@@ -69,9 +69,18 @@ A powerful browser AI assistant that can control browsers, manage files, execute
 git clone https://github.com/xxccdl/xbrowserai.git
 cd xbrowserai
 
-# Install dependencies
+# Install dependencies (skip Chrome download)
+$env:PUPPETEER_SKIP_DOWNLOAD="true"
+npm install
+
+# Or use Chinese mirror (Windows PowerShell)
+$env:PUPPETEER_DOWNLOAD_BASE_URL="https://cdn.npmmirror.com/binaries/chrome-for-testing"
 npm install
 ```
+
+**Note**: On first run, the program will automatically download Chrome browser. If download fails, you can:
+1. Set environment variable to skip download and use system-installed Chrome
+2. Or use Chinese mirror to accelerate download
 
 ### Configuration
 
@@ -200,7 +209,7 @@ Issues and Pull Requests are welcome!
 
 ## 📄 License
 
-ISC License - See [LICENSE](LICENSE) file for details
+MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 

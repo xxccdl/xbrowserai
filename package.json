@@ -22,7 +22,7 @@
     "puppeteer"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "一个可以控制浏览器、管理文件、执行终端命令的AI助手",
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.22",
