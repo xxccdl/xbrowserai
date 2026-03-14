@@ -1,0 +1,42 @@
+{
+  "name": "weather_query",
+  "description": "天气查询技能，当用户提到天气时自动查询天气信息",
+  "triggers": [
+    "天气",
+    "天气预报",
+    "今天天气",
+    "明天天气",
+    "查询天气",
+    "天气怎么样",
+    "weather"
+  ],
+  "actions": [
+    {
+      "type": "browser_goto",
+      "url": "https://www.weather.com.cn/weather/101010100.shtml"
+    },
+    {
+      "type": "browser_wait",
+      "ms": 2000
+    },
+    {
+      "type": "browser_get_text",
+      "selector": ".today .tem"
+    },
+    {
+      "type": "browser_get_text",
+      "selector": ".today .wea"
+    },
+    {
+      "type": "browser_get_text",
+      "selector": ".today .win span"
+    },
+    {
+      "type": "browser_get_text",
+      "selector": ".today .win i"
+    }
+  ],
+  "enabled": true,
+  "createdAt": "2026-03-14T08:02:05.830Z",
+  "type": "ai-created"
+}

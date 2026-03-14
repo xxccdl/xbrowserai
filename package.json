@@ -1,0 +1,43 @@
+{
+  "name": "xbrowserai",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "xbc": "./bin/xbc.js",
+    "xbc.cmd": "./bin/xbc.cmd"
+  },
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node scripts/build.js",
+    "package": "node scripts/package.js"
+  },
+  "keywords": [
+    "browser",
+    "ai",
+    "agent",
+    "automation",
+    "puppeteer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "一个可以控制浏览器、管理文件、执行终端命令的AI助手",
+  "dependencies": {
+    "@dqbd/tiktoken": "^1.0.22",
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.0",
+    "figlet": "^1.7.0",
+    "iconv-lite": "^0.7.2",
+    "inquirer": "^9.2.0",
+    "openai": "^4.28.0",
+    "ora": "^8.0.0",
+    "puppeteer": "^22.0.0"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.0"
+  }
+}

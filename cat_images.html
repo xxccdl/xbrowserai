@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可爱的猫咪图片集</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ff6b6b;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .image-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .image-info {
+            padding: 15px;
+            background-color: #fff9f9;
+        }
+        
+        .image-info h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .image-info p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .download-info {
+            background-color: #e8f4ff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .download-info h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .cat-facts {
+            background-color: #fff9e6;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .cat-facts h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+        }
+        
+        .cat-facts ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        .cat-facts li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .cat-facts li:before {
+            content: "🐱";
+            position: absolute;
+            left: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐱 可爱的猫咪图片集 🐱</h1>
+            <p class="subtitle">搜索并下载的猫咪美图 | 更新时间: 2026年3月14日</p>
+        </header>
+        
+        <section class="image-grid">
+            <div class="image-card">
+                <img src="images/cat_image.jpg" alt="可爱的猫咪图片1">
+                <div class="image-info">
+                    <h3>猫咪美图 #1</h3>
+                    <p>来源: 百度图片搜索</p>
+                    <p>尺寸: 500 × 750 像素</p>
+                </div>
+            </div>
+            
+            <div class="image-card">
+                <img src="images/cat_image2.jpg" alt="可爱的猫咪图片2">
+                <div class="image-info">
+                    <h3>猫咪美图 #2</h3>
+                    <p>来源: 百度图片搜索</p>
+                    <p>尺寸: 750 × 500 像素</p>
+                </div>
+            </div>
+            
+            <div class="image-card">
+                <img src="images/cat_high_quality.jpg" alt="高清猫咪图片">
+                <div class="image-info">
+                    <h3>高清猫咪美图</h3>
+                    <p>来源: 百度图片搜索</p>
+                    <p>尺寸: 800 × 1422 像素</p>
+                    <p>高质量版本</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="download-info">
+            <h2>📥 下载信息</h2>
+            <p>所有图片已成功下载到本地 <code>images/</code> 目录中。</p>
+            <p>下载的图片文件:</p>
+            <ul>
+                <li><code>cat_image.jpg</code> - 标准尺寸猫咪图片</li>
+                <li><code>cat_image2.jpg</code> - 横向猫咪图片</li>
+                <li><code>cat_high_quality.jpg</code> - 高清猫咪图片</li>
+            </ul>
+            <p>搜索关键词: <strong>"猫咪"</strong></p>
+            <p>搜索来源: <a href="https://image.baidu.com" target="_blank">百度图片</a></p>
+        </section>
+        
+        <section class="cat-facts">
+            <h2>🐾 有趣的猫咪小知识</h2>
+            <ul>
+                <li>猫咪的鼻子纹路就像人类的指纹一样，每只猫都是独一无二的</li>
+                <li>猫咪可以发出超过100种不同的声音</li>
+                <li>猫咪的胡须不仅长在脸上，还长在前腿后面</li>
+                <li>猫咪一生中大约有70%的时间在睡觉</li>
+                <li>猫咪的跳跃能力可以达到自己身高的5倍</li>
+            </ul>
+        </section>
+        
+        <footer>
+            <p>© 2026 猫咪图片收集 | 使用百度图片搜索获取 | 仅供个人欣赏使用</p>
+            <p>注意: 图片版权归原作者所有，请勿用于商业用途</p>
+        </footer>
+    </div>
+</body>
+</html>
