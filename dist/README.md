@@ -66,7 +66,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/xbrowserai.git
+git clone https://github.com/xxccdl/xbrowserai.git
 cd xbrowserai
 
 # 安装依赖

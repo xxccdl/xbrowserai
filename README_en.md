@@ -66,7 +66,7 @@ A powerful browser AI assistant that can control browsers, manage files, execute
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/xbrowserai.git
+git clone https://github.com/xxccdl/xbrowserai.git
 cd xbrowserai
 
 # Install dependencies
