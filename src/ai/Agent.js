@@ -19,8 +19,37 @@ class Agent {
     this.maxHistoryLength = 100;
     this.maxTokens = 80000;
     this.compressionThreshold = 0.5;
-    this.maxToolResultLength = 2000;
+    this.maxToolResultLength = 1000;
     this.tokenEstimateFactor = 2;
+    
+    this.nonFileTools = [
+      'browser_goto', 'browser_click', 'browser_click_by_text', 'browser_type', 
+      'browser_get_text', 'browser_get_page_info', 'browser_get_content',
+      'browser_screenshot', 'browser_new_page', 'browser_switch_page',
+      'browser_go_back', 'browser_go_forward', 'browser_refresh',
+      'browser_wait_for_selector', 'browser_evaluate', 'browser_get_all_links',
+      'browser_scroll_to', 'browser_scroll_to_top', 'browser_scroll_to_bottom',
+      'browser_scroll_by', 'browser_wait', 'terminal_execute',
+      'get_current_time', 'get_current_time_formatted', 'sleep',
+      'handle_dialog', 'get_dialog_history', 'extract_table', 'extract_list',
+      'extract_links', 'extract_article', 'get_cookies', 'set_cookie',
+      'export_cookies', 'import_cookies', 'list_tabs', 'close_tab',
+      'download_file', 'fill_form', 'press_key', 'press_enter',
+      'press_ctrl_a', 'press_ctrl_c', 'press_ctrl_v', 'task_add',
+      'task_schedule', 'task_schedule_ai', 'task_list', 'task_run',
+      'task_pause', 'task_resume', 'task_remove', 'skill_list',
+      'skill_create', 'skill_update', 'skill_delete', 'skill_detail',
+      'history_clear', 'history_delete', 'history_delete_range', 'history_list'
+    ];
+    
+    this.fileTools = [
+      'file_read', 'file_write', 'file_append', 'file_create',
+      'file_delete', 'file_list_dir', 'file_create_dir'
+    ];
+    
+    this.nonFileToolTimeout = 6000;
+    this.executionTimeout = 10000;
+    this.fileToolTimeout = 30000;
     
     // 初始化技能管理器
     this.skillManager = new SkillManager();
@@ -32,6 +61,22 @@ class Agent {
     // 注册定时任务技能
     const taskSkill = new TaskSchedulerSkill(this.taskScheduler);
     this.skillManager.registerSkill('taskScheduler', taskSkill.getHandler());
+  }
+
+  async withTimeout(promise, timeoutMs, errorMessage) {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error(errorMessage || `操作超时 (${timeoutMs}ms)`));
+      }, timeoutMs);
+    });
+
+    try {
+      const result = await Promise.race([promise, timeoutPromise]);
+      return result;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   getTools() {
@@ -986,310 +1031,256 @@ class Agent {
 
   async executeTool(name, args) {
     try {
-      
       let result;
+      let timeout = this.executionTimeout;
       
-      switch (name) {
-        case 'browser_goto':
-          result = await this.browser.goto(args.url);
-          break;
-        
-        case 'browser_click':
-          result = await this.element.click(args.selector);
-          break;
-        
-        case 'browser_click_by_text':
-          result = await this.element.clickByText(args.text, args.tagName || '*');
-          break;
-        
-        case 'browser_type':
-          result = await this.element.type(args.selector, args.text);
-          break;
-        
-        case 'browser_get_text':
-          result = await this.element.getText(args.selector);
-          break;
-        
-        case 'browser_get_page_info':
-          result = await this.browser.getPageInfo();
-          break;
-        
-        case 'browser_get_content':
-          result = await this.browser.getPageContent();
-          break;
-        
-        case 'browser_screenshot':
-          result = await this.browser.screenshot(args);
-          break;
-        
-        case 'browser_new_page':
-          result = await this.browser.newPage();
-          break;
-        
-        case 'browser_switch_page':
-          result = await this.browser.switchToPage(args.index);
-          break;
-        
-        case 'browser_go_back':
-          result = await this.browser.goBack();
-          break;
-        
-        case 'browser_go_forward':
-          result = await this.browser.goForward();
-          break;
-        
-        case 'browser_refresh':
-          result = await this.browser.refresh();
-          break;
-        
-        case 'browser_wait_for_selector':
-          result = await this.browser.waitForSelector(args.selector, args.timeout);
-          break;
-        
-        case 'browser_evaluate':
-          result = await this.browser.evaluate(new Function(args.script));
-          break;
-        
-        case 'browser_get_all_links':
-          result = await this.element.getAllLinks();
-          break;
-        
-        case 'browser_scroll_to':
-          result = await this.element.scrollTo(args.selector);
-          break;
-        
-        case 'browser_scroll_to_top':
-          result = await this.browser.scrollToTop();
-          break;
-        
-        case 'browser_scroll_to_bottom':
-          result = await this.browser.scrollToBottom();
-          break;
-        
-        case 'browser_scroll_by':
-          result = await this.browser.scrollBy(args.pixels);
-          break;
-        
-        case 'browser_wait':
-          result = await this.browser.waitForMilliseconds(args.ms);
-          break;
-        
-        case 'file_read':
-          result = await this.fileManager.readFile(args.path);
-          break;
-        
-        case 'file_write':
-          result = await this.fileManager.writeFile(args.path, args.content);
-          break;
-        
-        case 'file_append':
-          result = await this.fileManager.appendFile(args.path, args.content);
-          break;
-        
-        case 'file_create':
-          result = await this.fileManager.createFile(args.path, args.content || '');
-          break;
-        
-        case 'file_delete':
-          result = await this.fileManager.deleteFile(args.path);
-          break;
-        
-        case 'file_list_dir':
-          result = await this.fileManager.listDir(args.path || '.');
-          break;
-        
-        case 'file_create_dir':
-          result = await this.fileManager.createDir(args.path);
-          break;
-        
-        case 'terminal_execute':
-          result = await this.terminal.execute(args.command);
-          break;
-        
-        case 'get_current_time':
-          result = { success: true, result: this.utils.getCurrentTime() };
-          break;
-        
-        case 'get_current_time_formatted':
-          result = { success: true, result: this.utils.getCurrentTimeFormatted(args.format) };
-          break;
-        
-        case 'sleep':
-          await this.utils.sleep(args.ms);
-          result = { success: true };
-          break;
-        
-        case 'handle_dialog':
-          result = await this.dialogHandler.enableAutoHandle(args.action, args.text || '');
-          break;
-        
-        case 'get_dialog_history':
-          result = this.dialogHandler.getDialogHistory();
-          break;
-        
-        case 'extract_table':
-          result = await this.dataExtractor.extractTable(args.selector || 'table');
-          break;
-        
-        case 'extract_list':
-          result = await this.dataExtractor.extractList(args.selector || 'li');
-          break;
-        
-        case 'extract_links':
-          result = await this.dataExtractor.extractLinks(args.selector || 'a');
-          break;
-        
-        case 'extract_article':
-          result = await this.dataExtractor.extractTextContent(args.selector || 'article');
-          break;
-        
-        case 'get_cookies':
-          result = await this.cookieManager.getAllCookies();
-          break;
-        
-        case 'set_cookie':
-          result = await this.cookieManager.setCookie({
-            name: args.name,
-            value: args.value,
-            domain: args.domain,
-            path: args.path || '/'
-          });
-          break;
-        
-        case 'export_cookies':
-          result = await this.cookieManager.exportCookies(args.filePath);
-          break;
-        
-        case 'import_cookies':
-          result = await this.cookieManager.importCookies(args.filePath);
-          break;
-        
-        case 'list_tabs':
-          result = await this.browser.getPageInfo();
-          break;
-        
-        case 'close_tab':
-          result = await this.browser.closePage(args.index);
-          break;
-        
-        case 'download_file':
-          result = await this.browser.downloadFile(args.url, args.savePath);
-          break;
-        
-        case 'fill_form':
-          result = await this.fillForm(args.selector || 'form', args.data);
-          break;
-        
-        case 'press_key':
-          result = await this.element.pressKey(args.selector, args.key);
-          break;
-        
-        case 'press_enter':
-          result = await this.element.pressEnter(args.selector);
-          break;
-        
-        case 'press_ctrl_a':
-          result = await this.element.pressCtrlA(args.selector);
-          break;
-        
-        case 'press_ctrl_c':
-          result = await this.element.pressCtrlC(args.selector);
-          break;
-        
-        case 'press_ctrl_v':
-          result = await this.element.pressCtrlV(args.selector);
-          break;
-        
-        case 'task_add':
-          result = await this.taskScheduler.addTask(args.name, args.command);
-          break;
-        
-        case 'task_schedule':
-          result = await this.taskScheduler.addSchedule(args.name, args.command, args.schedule);
-          break;
-        
-        case 'task_schedule_ai':
-          result = await this.taskScheduler.addSchedule(args.name, '', args.schedule, {
-            taskType: 'ai',
-            prompt: args.prompt
-          });
-          break;
-        
-        case 'task_list':
-          result = this.taskScheduler.listTasks();
-          break;
-        
-        case 'task_run':
-          result = await this.taskScheduler.runTask(args.id);
-          break;
-        
-        case 'task_pause':
-          result = await this.taskScheduler.pauseSchedule(args.id);
-          break;
-        
-        case 'task_resume':
-          result = await this.taskScheduler.resumeSchedule(args.id);
-          break;
-        
-        case 'task_remove':
-          result = await this.taskScheduler.removeTask(args.id);
-          break;
-        
-        case 'skill_list':
-          result = this.skillManager.listSkills();
-          break;
-        
-        case 'skill_create':
-          result = await this.skillManager.createSkill(
-            args.name,
-            args.description,
-            args.triggers,
-            args.actions || []
-          );
-          break;
-        
-        case 'skill_update':
-          result = await this.skillManager.updateSkill(args.name, {
-            description: args.description,
-            triggers: args.triggers,
-            enabled: args.enabled
-          });
-          break;
-        
-        case 'skill_delete':
-          result = this.skillManager.unregisterSkill(args.name);
-          break;
-        
-        case 'skill_detail':
-          result = await this.skillManager.getSkillDetail(args.name);
-          break;
-        
-        case 'history_clear':
-          this.clearHistory();
-          result = { success: true, message: '对话历史已清空' };
-          break;
-        
-        case 'history_delete':
-          result = this.deleteHistory(args.index);
-          break;
-        
-        case 'history_delete_range':
-          result = this.deleteHistoryRange(args.start, args.end);
-          break;
-        
-        case 'history_list':
-          result = { 
-            success: true, 
-            history: this.conversationHistory.map((msg, i) => ({
-              index: i,
-              role: msg.role,
-              content: (msg.content || '').substring(0, 100)
-            }))
-          };
-          break;
-        
-        default:
-          throw new Error(`未知工具: ${name}`);
+      if (this.nonFileTools.includes(name)) {
+        timeout = this.nonFileToolTimeout;
+      } else if (this.fileTools.includes(name)) {
+        timeout = this.fileToolTimeout;
+      }
+      
+      const executeTask = async () => {
+        switch (name) {
+          case 'browser_goto':
+            return await this.browser.goto(args.url);
+          
+          case 'browser_click':
+            return await this.element.click(args.selector);
+          
+          case 'browser_click_by_text':
+            return await this.element.clickByText(args.text, args.tagName || '*');
+          
+          case 'browser_type':
+            return await this.element.type(args.selector, args.text);
+          
+          case 'browser_get_text':
+            return await this.element.getText(args.selector);
+          
+          case 'browser_get_page_info':
+            return await this.browser.getPageInfo();
+          
+          case 'browser_get_content':
+            return await this.browser.getPageContent();
+          
+          case 'browser_screenshot':
+            return await this.browser.screenshot(args);
+          
+          case 'browser_new_page':
+            return await this.browser.newPage();
+          
+          case 'browser_switch_page':
+            return await this.browser.switchToPage(args.index);
+          
+          case 'browser_go_back':
+            return await this.browser.goBack();
+          
+          case 'browser_go_forward':
+            return await this.browser.goForward();
+          
+          case 'browser_refresh':
+            return await this.browser.refresh();
+          
+          case 'browser_wait_for_selector':
+            return await this.browser.waitForSelector(args.selector, args.timeout);
+          
+          case 'browser_evaluate':
+            return await this.browser.evaluate(new Function(args.script));
+          
+          case 'browser_get_all_links':
+            return await this.element.getAllLinks();
+          
+          case 'browser_scroll_to':
+            return await this.element.scrollTo(args.selector);
+          
+          case 'browser_scroll_to_top':
+            return await this.browser.scrollToTop();
+          
+          case 'browser_scroll_to_bottom':
+            return await this.browser.scrollToBottom();
+          
+          case 'browser_scroll_by':
+            return await this.browser.scrollBy(args.pixels);
+          
+          case 'browser_wait':
+            return await this.browser.waitForMilliseconds(args.ms);
+          
+          case 'file_read':
+            return await this.fileManager.readFile(args.path);
+          
+          case 'file_write':
+            return await this.fileManager.writeFile(args.path, args.content);
+          
+          case 'file_append':
+            return await this.fileManager.appendFile(args.path, args.content);
+          
+          case 'file_create':
+            return await this.fileManager.createFile(args.path, args.content || '');
+          
+          case 'file_delete':
+            return await this.fileManager.deleteFile(args.path);
+          
+          case 'file_list_dir':
+            return await this.fileManager.listDir(args.path || '.');
+          
+          case 'file_create_dir':
+            return await this.fileManager.createDir(args.path);
+          
+          case 'terminal_execute':
+            return await this.terminal.execute(args.command);
+        
+          case 'get_current_time':
+            return { success: true, result: this.utils.getCurrentTime() };
+          
+          case 'get_current_time_formatted':
+            return { success: true, result: this.utils.getCurrentTimeFormatted(args.format) };
+          
+          case 'sleep':
+            await this.utils.sleep(args.ms);
+            return { success: true };
+          
+          case 'handle_dialog':
+            return await this.dialogHandler.enableAutoHandle(args.action, args.text || '');
+          
+          case 'get_dialog_history':
+            return this.dialogHandler.getDialogHistory();
+          
+          case 'extract_table':
+            return await this.dataExtractor.extractTable(args.selector || 'table');
+          
+          case 'extract_list':
+            return await this.dataExtractor.extractList(args.selector || 'li');
+          
+          case 'extract_links':
+            return await this.dataExtractor.extractLinks(args.selector || 'a');
+          
+          case 'extract_article':
+            return await this.dataExtractor.extractTextContent(args.selector || 'article');
+          
+          case 'get_cookies':
+            return await this.cookieManager.getAllCookies();
+          
+          case 'set_cookie':
+            return await this.cookieManager.setCookie({
+              name: args.name,
+              value: args.value,
+              domain: args.domain,
+              path: args.path || '/'
+            });
+          
+          case 'export_cookies':
+            return await this.cookieManager.exportCookies(args.filePath);
+          
+          case 'import_cookies':
+            return await this.cookieManager.importCookies(args.filePath);
+          
+          case 'list_tabs':
+            return await this.browser.getPageInfo();
+          
+          case 'close_tab':
+            return await this.browser.closePage(args.index);
+          
+          case 'download_file':
+            return await this.browser.downloadFile(args.url, args.savePath);
+          
+          case 'fill_form':
+            return await this.fillForm(args.selector || 'form', args.data);
+          
+          case 'press_key':
+            return await this.element.pressKey(args.selector, args.key);
+          
+          case 'press_enter':
+            return await this.element.pressEnter(args.selector);
+          
+          case 'press_ctrl_a':
+            return await this.element.pressCtrlA(args.selector);
+          
+          case 'press_ctrl_c':
+            return await this.element.pressCtrlC(args.selector);
+          
+          case 'press_ctrl_v':
+            return await this.element.pressCtrlV(args.selector);
+          
+          case 'task_add':
+            return await this.taskScheduler.addTask(args.name, args.command);
+          
+          case 'task_schedule':
+            return await this.taskScheduler.addSchedule(args.name, args.command, args.schedule);
+          
+          case 'task_schedule_ai':
+            return await this.taskScheduler.addSchedule(args.name, '', args.schedule, {
+              taskType: 'ai',
+              prompt: args.prompt
+            });
+          
+          case 'task_list':
+            return this.taskScheduler.listTasks();
+          
+          case 'task_run':
+            return await this.taskScheduler.runTask(args.id);
+          
+          case 'task_pause':
+            return await this.taskScheduler.pauseSchedule(args.id);
+          
+          case 'task_resume':
+            return await this.taskScheduler.resumeSchedule(args.id);
+          
+          case 'task_remove':
+            return await this.taskScheduler.removeTask(args.id);
+          
+          case 'skill_list':
+            return this.skillManager.listSkills();
+          
+          case 'skill_create':
+            return await this.skillManager.createSkill(
+              args.name,
+              args.description,
+              args.triggers,
+              args.actions || []
+            );
+          
+          case 'skill_update':
+            return await this.skillManager.updateSkill(args.name, {
+              description: args.description,
+              triggers: args.triggers,
+              enabled: args.enabled
+            });
+          
+          case 'skill_delete':
+            return this.skillManager.unregisterSkill(args.name);
+          
+          case 'skill_detail':
+            return await this.skillManager.getSkillDetail(args.name);
+          
+          case 'history_clear':
+            this.clearHistory();
+            return { success: true, message: '对话历史已清空' };
+          
+          case 'history_delete':
+            return this.deleteHistory(args.index);
+          
+          case 'history_delete_range':
+            return this.deleteHistoryRange(args.start, args.end);
+          
+          case 'history_list':
+            return { 
+              success: true, 
+              history: this.conversationHistory.map((msg, i) => ({
+                index: i,
+                role: msg.role,
+                content: (msg.content || '').substring(0, 100)
+              }))
+            };
+          
+          default:
+            throw new Error(`未知工具: ${name}`);
+        }
+      };
+      
+      try {
+        result = await this.withTimeout(executeTask(), timeout, `工具调用超时: ${name} (${timeout}ms)`);
+      } catch (timeoutError) {
+        return { error: timeoutError.message, timeout: true };
       }
       
       if (result && typeof result === 'object' && 'success' in result) {

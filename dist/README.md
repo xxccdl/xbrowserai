@@ -1,6 +1,6 @@
 # xbrowserai - 浏览器AI助手
 
-[![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node.js-%3E%3D16-green.svg)](https://nodejs.org/)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](package.json)
 
@@ -69,9 +69,18 @@
 git clone https://github.com/xxccdl/xbrowserai.git
 cd xbrowserai
 
-# 安装依赖
+# 安装依赖（跳过Chrome下载）
+$env:PUPPETEER_SKIP_DOWNLOAD="true"
+npm install
+
+# 或使用国内镜像（Windows PowerShell）
+$env:PUPPETEER_DOWNLOAD_BASE_URL="https://cdn.npmmirror.com/binaries/chrome-for-testing"
 npm install
 ```
+
+**注意**：首次运行时，程序会自动下载Chrome浏览器。如果下载失败，可以：
+1. 设置环境变量跳过下载，使用系统已安装的Chrome
+2. 或使用国内镜像加速下载
 
 ### 配置
 
@@ -200,7 +209,7 @@ npm run package
 
 ## 📄 许可证
 
-ISC License - 详见 [LICENSE](LICENSE) 文件
+MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 🙏 致谢
 
