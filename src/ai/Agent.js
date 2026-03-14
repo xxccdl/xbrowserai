@@ -1347,11 +1347,86 @@ class Agent {
     return total;
   }
 
-  truncateText(text, maxLength) {
-    if (text.length <= maxLength) {
-      return text;
+  simplifyToolResult(result, toolName) {
+    if (!result) return '成功';
+    
+    if (typeof result === 'string') {
+      return this.truncateText(result, this.maxToolResultLength);
     }
-    return text.substring(0, maxLength) + '...[内容已截断]';
+    
+    if (typeof result === 'object') {
+      if (result.success === true) {
+        if (result.message) {
+          return result.message;
+        }
+        if (result.result !== undefined) {
+          return this.simplifyValue(result.result, toolName);
+        }
+        return '成功';
+      }
+      
+      if (result.error) {
+        return `错误: ${result.error}`;
+      }
+    }
+    
+    return this.truncateText(JSON.stringify(result), this.maxToolResultLength);
+  }
+
+  simplifyValue(value, toolName) {
+    if (value === null || value === undefined) return '';
+    
+    if (typeof value === 'string') {
+      return this.truncateText(value, this.maxToolResultLength);
+    }
+    
+    if (typeof value === 'boolean' || typeof value === 'number') {
+      return String(value);
+    }
+    
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '[]';
+      if (value.length <= 5) {
+        const items = value.slice(0, 5).map(item => 
+          typeof item === 'string' ? item.substring(0, 100) : JSON.stringify(item).substring(0, 100)
+        );
+        return `[${items.join(', ')}${value.length > 5 ? '...' : ''}] (${value.length}项)`;
+      }
+      return `[...${value.length}项]`;
+    }
+    
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      if (keys.length === 0) return '{}';
+      
+      const importantKeys = ['title', 'url', 'text', 'content', 'name', 'id', 'path', 'message', 'result', 'count', 'success'];
+      const filtered = {};
+      for (const key of importantKeys) {
+        if (value[key] !== undefined) {
+          filtered[key] = value[key];
+        }
+      }
+      
+      if (Object.keys(filtered).length > 0) {
+        const str = JSON.stringify(filtered);
+        if (str.length <= this.maxToolResultLength) {
+          return str;
+        }
+      }
+      
+      return `{${keys.length}个字段}`;
+    }
+    
+    return String(value);
+  }
+
+  truncateText(text, maxLength) {
+    if (!text) return '';
+    const str = String(text);
+    if (str.length <= maxLength) {
+      return str;
+    }
+    return str.substring(0, maxLength) + '...';
   }
 
   truncateToolResult(result) {
@@ -1385,10 +1460,15 @@ class Agent {
     return message;
   }
 
-  smartAddToHistory(message) {
+  smartAddToHistory(message, toolName = null) {
     const safeMessage = this.ensureMessageContent({...message});
     if (safeMessage.role === 'tool' && safeMessage.content) {
-      safeMessage.content = this.truncateToolResult(safeMessage.content);
+      try {
+        const parsed = JSON.parse(safeMessage.content);
+        safeMessage.content = this.simplifyToolResult(parsed, toolName);
+      } catch {
+        safeMessage.content = this.truncateToolResult(safeMessage.content);
+      }
     }
     this.conversationHistory.push(safeMessage);
     if (this.conversationHistory.length > this.maxHistoryLength) {
@@ -1456,7 +1536,7 @@ class Agent {
             role: 'tool',
             tool_call_id: toolCall.id,
             content: JSON.stringify(result)
-          });
+          }, toolName);
         }
         
         continue;
